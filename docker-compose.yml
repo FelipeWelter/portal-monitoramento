@@ -4,27 +4,19 @@ services:
     container_name: portal-monitoramento
     restart: unless-stopped
     ports:
-      - "3080:8080"
+      - "80:8080"
     environment:
       PORTAL_TITLE: "PAINEL DE SERVIÇOS"
       PORTAL_SUBTITLE: "6ª Companhia de Comunicações Mecanizada"
       REFRESH_SECONDS: "15"
-      CHECK_TIMEOUT: "15"
+      CHECK_TIMEOUT: "4"
+      PING_TIMEOUT: "2"
       HOST_ROOT: "/host"
-      FO_URL: "http://10.133.212.103/fo/auth/login"
-      OTOBO_CLIENTE_URL: "http://10.133.212.103/otobo/customer.pl"
-      OTOBO_ADMIN_URL: "http://10.133.212.103/admin"
-      NPM_URL: "http://10.133.212.103:81"
-      COCKPIT_URL: "https://10.133.212.103:9090"
-      KUMA_URL: "http://10.133.212.103:3001"
-      C2INTER_URL: "https://10.133.212.13:8000"
+      FO_URL: "http://10.133.14.179/fo/"
+      OTOBO_CLIENTE_URL: "http://10.133.14.179/otobo/customer.pl"
+      OTOBO_ADMIN_URL: "http://10.133.14.179/admin"
+      COCKPIT_URL: "https://10.133.14.179:9090"
+      KUMA_URL: "http://10.133.14.179:3001"
     volumes:
       - /:/host:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - npm_network
-
-networks:
-  npm_network:
-    external: true
-    name: nginx-proxy-manager_default

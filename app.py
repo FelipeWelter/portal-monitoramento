@@ -1,14 +1,16 @@
 import os
+import re
+import subprocess
 import time
 from pathlib import Path
 
 import docker
 import requests
+import urllib3
 from flask import Flask, jsonify, render_template
-from werkzeug.middleware.proxy_fix import ProxyFix
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-import urllib3
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -17,41 +19,39 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 HOST_ROOT = Path(os.getenv("HOST_ROOT", "/host"))
 CHECK_TIMEOUT = float(os.getenv("CHECK_TIMEOUT", "4"))
+PING_TIMEOUT = int(os.getenv("PING_TIMEOUT", "2"))
 
 SERVICES = [
     {
         "id": "fo",
         "name": "Sistema FO",
         "description": "Sistema de Fatos Observados",
-        "url": os.getenv("FO_URL", "http://10.133.212.103/fo/"),
+        "type": "http",
+        "url": os.getenv("FO_URL", "http://10.133.14.179/fo/"),
         "container": os.getenv("FO_CONTAINER", "controlefo-app-1"),
     },
     {
         "id": "otobo_cliente",
         "name": "OTOBO Cliente",
         "description": "Portal de abertura de chamados",
-        "url": os.getenv("OTOBO_CLIENTE_URL", "http://10.133.212.103/otobo/customer.pl"),
+        "type": "http",
+        "url": os.getenv("OTOBO_CLIENTE_URL", "http://10.133.14.179/otobo/customer.pl"),
         "container": os.getenv("OTOBO_WEB_CONTAINER", "otobo-web-1"),
     },
     {
         "id": "otobo_admin",
         "name": "OTOBO Admin",
         "description": "Administração do OTOBO",
-        "url": os.getenv("OTOBO_ADMIN_URL", "http://10.133.212.103/admin"),
+        "type": "http",
+        "url": os.getenv("OTOBO_ADMIN_URL", "http://10.133.14.179/admin"),
         "container": os.getenv("OTOBO_WEB_CONTAINER", "otobo-web-1"),
-    },
-    {
-        "id": "npm",
-        "name": "Nginx Proxy Manager",
-        "description": "Gerenciamento do proxy reverso",
-        "url": os.getenv("NPM_URL", "http://10.133.212.103:81"),
-        "container": os.getenv("NPM_CONTAINER", "nginx-proxy-manager-app-1"),
     },
     {
         "id": "cockpit",
         "name": "Cockpit",
         "description": "Administração do servidor",
-        "url": os.getenv("COCKPIT_URL", "https://10.133.212.103:9090"),
+        "type": "http",
+        "url": os.getenv("COCKPIT_URL", "https://10.133.14.179:9090"),
         "container": "",
         "verify_tls": False,
     },
@@ -59,18 +59,37 @@ SERVICES = [
         "id": "kuma",
         "name": "Uptime Kuma",
         "description": "Histórico de disponibilidade",
-        "url": os.getenv("KUMA_URL", "http://10.133.212.103:3001"),
+        "type": "http",
+        "url": os.getenv("KUMA_URL", "http://10.133.14.179:3001"),
         "container": os.getenv("KUMA_CONTAINER", "uptime-kuma"),
     },
     {
-	"id": "C2inter",
-	"name": "C2 em Combate 6ª Cia Com Mec",
-	"description": "Servidor C2 em Combate hospedado na 6ª Cia Com Mec",
-	"url": os.getenv("C2INTER_URL", "https://10.133.212.13:8000"),
-	"container": "",
-	"verify_tls": False,
+        "id": "servidor_arquivos",
+        "name": "Servidor de Arquivos",
+        "description": "10.133.212.11 • Monitoramento ICMP",
+        "type": "ping",
+        "host": "10.133.212.11",
+        "url": "",
+        "container": "",
     },
-
+    {
+        "id": "c2_interno",
+        "name": "C2 em Combate Interno",
+        "description": "10.133.212.13 • Monitoramento ICMP",
+        "type": "ping",
+        "host": "10.133.212.13",
+        "url": "",
+        "container": "",
+    },
+    {
+        "id": "c2_7cta",
+        "name": "C2 Combate 7º CTA",
+        "description": "10.166.66.198 • Monitoramento ICMP",
+        "type": "ping",
+        "host": "10.166.66.198",
+        "url": "",
+        "container": "",
+    },
 ]
 
 _session = requests.Session()
@@ -86,8 +105,7 @@ def read_host_cpu_percent(sample_delay=0.20):
         parts = stat.read_text().splitlines()[0].split()[1:]
         values = [int(v) for v in parts]
         idle = values[3] + (values[4] if len(values) > 4 else 0)
-        total = sum(values)
-        return idle, total
+        return idle, sum(values)
 
     try:
         idle1, total1 = read_cpu()
@@ -160,18 +178,53 @@ def container_state(client, container_name):
         container = client.containers.get(container_name)
         container.reload()
         health = container.attrs.get("State", {}).get("Health", {}).get("Status")
-        return {
-            "status": container.status,
-            "health": health,
-        }
+        return {"status": container.status, "health": health}
     except Exception:
-        return {
-            "status": "not_found",
-            "health": None,
-        }
+        return {"status": "not_found", "health": None}
 
 
-def check_service(service, client):
+def check_ping(service):
+    host = service["host"]
+    start = time.perf_counter()
+    error = None
+    latency_ms = None
+
+    try:
+        result = subprocess.run(
+            ["ping", "-n", "-c", "1", "-W", str(PING_TIMEOUT), host],
+            capture_output=True,
+            text=True,
+            timeout=PING_TIMEOUT + 2,
+        )
+        online = result.returncode == 0
+        if online:
+            match = re.search(r"time[=<]([0-9.]+)\s*ms", result.stdout)
+            if match:
+                latency_ms = round(float(match.group(1)), 1)
+        else:
+            error = result.stderr.strip() or "Sem resposta ao ping"
+    except subprocess.TimeoutExpired:
+        online = False
+        error = "Tempo limite do ping excedido"
+    except FileNotFoundError:
+        online = False
+        error = "Comando ping não instalado no container"
+    except Exception as exc:
+        online = False
+        error = str(exc)
+
+    elapsed_ms = round((time.perf_counter() - start) * 1000, 1)
+    return {
+        **service,
+        "online": online,
+        "status_code": None,
+        "response_ms": latency_ms if latency_ms is not None else elapsed_ms,
+        "error": error,
+        "container_state": None,
+    }
+
+
+def check_http(service, client):
     start = time.perf_counter()
     ok = False
     status_code = None
@@ -199,6 +252,12 @@ def check_service(service, client):
     }
 
 
+def check_service(service, client):
+    if service.get("type") == "ping":
+        return check_ping(service)
+    return check_http(service, client)
+
+
 @app.get("/")
 def index():
     return render_template(
@@ -210,71 +269,31 @@ def index():
 
 
 @app.get("/api/status")
-
 def api_status():
-
     client = docker_client()
-
     services = [check_service(service, client) for service in SERVICES]
 
-
-
-    container_names = {
-
-        item.get("container")
-
-        for item in services
-
-        if item.get("container")
-
-    }
-
-
-
+    container_names = {item.get("container") for item in services if item.get("container")}
     running_names = {
-
         item.get("container")
-
         for item in services
-
-        if item.get("container")
-
-        and (item.get("container_state") or {}).get("status") == "running"
-
+        if item.get("container") and (item.get("container_state") or {}).get("status") == "running"
     }
-
-
 
     return jsonify(
-
         {
-
             "timestamp": int(time.time()),
-
             "services": services,
-
             "server": {
-
                 "cpu_percent": read_host_cpu_percent(),
-
                 "memory": read_host_memory(),
-
                 "disk": read_host_disk(),
-
                 "uptime": read_host_uptime(),
-
                 "containers_running": len(running_names),
-
                 "containers_total": len(container_names),
-
             },
-
         }
-
     )
-
-
-
 
 
 @app.get("/health")

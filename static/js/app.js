@@ -21,15 +21,20 @@ function renderServices(services) {
         const state = statusText(service);
         const online = state === "ONLINE";
         const container = service.container_state;
-        const containerLabel = container
-            ? `${container.status}${container.health ? ` • ${container.health}` : ""}`
-            : "Monitor HTTP";
+        const isPing = service.type === "ping";
+        const monitorLabel = isPing
+            ? `PING • ${service.host}`
+            : container
+                ? `${container.status}${container.health ? ` • ${container.health}` : ""}`
+                : "Monitor HTTP";
 
-        const card = document.createElement("a");
+        const card = document.createElement(service.url ? "a" : "article");
         card.className = "service-card";
-        card.href = service.url;
-        card.target = "_blank";
-        card.rel = "noopener";
+        if (service.url) {
+            card.href = service.url;
+            card.target = "_blank";
+            card.rel = "noopener";
+        }
         card.innerHTML = `
             <div class="service-header">
                 <span class="service-name">${service.name}</span>
@@ -37,14 +42,14 @@ function renderServices(services) {
             </div>
             <p class="service-description">${service.description}</p>
             <div class="service-footer">
-                <span>${service.response_ms} ms</span>
-                <span>${containerLabel}</span>
+                <span>${service.response_ms ?? "--"} ms</span>
+                <span>${monitorLabel}</span>
             </div>
         `;
         grid.appendChild(card);
     }
 
-    const allOnline = services.every(item => statusText(item) === "ONLINE");
+    const allOnline = services.length > 0 && services.every(item => statusText(item) === "ONLINE");
     const dot = document.getElementById("overall-dot");
     dot.className = `status-dot ${allOnline ? "online" : "offline"}`;
     document.getElementById("overall-text").textContent = allOnline

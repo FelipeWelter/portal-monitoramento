@@ -1,67 +1,32 @@
 # Portal de Monitoramento
 
-Painel visual inspirado no portal LOBO-GUARÁ 2026, com:
+Painel de monitoramento HTTP/HTTPS e ICMP (PING), com métricas do host e estado de contêineres Docker.
 
-- status HTTP dos serviços;
-- tempo de resposta;
-- estado dos contêineres Docker;
-- CPU, memória, disco e uptime do host;
-- atualização automática.
+## Monitores PING incluídos
+
+- 10.133.212.11 — Servidor de Arquivos
+- 10.133.212.13 — C2 em Combate Interno
+- 10.166.66.198 — C2 Combate 7º CTA
 
 ## Instalação
 
 ```bash
-cd /opt
-mkdir -p portal-monitoramento
-cd portal-monitoramento
-# copie os arquivos deste projeto
+cd /opt/portal-monitoramento
 docker compose up -d --build
 ```
 
-Acesso direto:
+Acesso direto na porta 80:
 
 ```text
-http://IP_DO_SERVIDOR:3080
+http://IP_DO_SERVIDOR
 ```
 
-## Imagens
+## Testes
 
-Coloque:
-
-- `static/img/brasao.png`
-- `static/img/fundo.jpg`
-
-## Nginx Proxy Manager
-
-Adicione uma Custom Location no Proxy Host existente:
-
-```text
-Location: /painel
-Scheme: http
-Forward Hostname/IP: portal-monitoramento
-Forward Port: 8080
-```
-
-Advanced:
-
-```nginx
-rewrite ^/painel/?(.*)$ /$1 break;
-
-proxy_set_header Host $host;
-proxy_set_header X-Real-IP $remote_addr;
-proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-proxy_set_header X-Forwarded-Proto $scheme;
-proxy_set_header X-Forwarded-Host $host;
-proxy_set_header X-Forwarded-Prefix /painel;
-
-proxy_read_timeout 60;
-proxy_send_timeout 60;
-```
-
-Na aba Advanced principal do Proxy Host:
-
-```nginx
-location = /painel {
-    return 302 /painel/;
-}
+```bash
+docker compose ps
+docker exec portal-monitoramento ping -c 2 10.133.212.11
+docker exec portal-monitoramento ping -c 2 10.133.212.13
+docker exec portal-monitoramento ping -c 2 10.166.66.198
+curl http://127.0.0.1/health
 ```
