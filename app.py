@@ -43,7 +43,7 @@ SERVICES = [
         "name": "OTOBO Admin",
         "description": "Administração do OTOBO",
         "type": "http",
-        "url": os.getenv("OTOBO_ADMIN_URL", "http://10.133.212.56"),
+        "url": os.getenv("OTOBO_ADMIN_URL", "http://10.133.212.56/otobo/index.pl"),
         "container": "",
     },
     {
