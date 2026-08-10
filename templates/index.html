@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body data-refresh="{{ refresh_seconds }}" data-api-url="{{ url_for('api_status') }}">
+    <div class="background-overlay"></div>
+
+    <main class="dashboard">
+        <header class="hero glass">
+            <img class="crest" src="{{ url_for('static', filename='img/brasao.png') }}" alt="Brasão"
+                 onerror="this.style.display='none'">
+            <div>
+                <p class="eyebrow">1º PELOTÃO DE COMUNICAÇÕES</p>
+                <h1>{{ title }}</h1>
+                <p class="subtitle">{{ subtitle }}</p>
+            </div>
+            <div class="overall-status">
+                <span id="overall-dot" class="status-dot loading"></span>
+                <span id="overall-text">Carregando...</span>
+            </div>
+        </header>
+
+        <section class="metrics">
+            <article class="metric glass">
+                <span class="metric-label">CPU</span>
+                <strong id="cpu-value">--%</strong>
+                <div class="bar"><span id="cpu-bar"></span></div>
+            </article>
+            <article class="metric glass">
+                <span class="metric-label">Memória</span>
+                <strong id="memory-value">--%</strong>
+                <small id="memory-detail">--</small>
+                <div class="bar"><span id="memory-bar"></span></div>
+            </article>
+            <article class="metric glass">
+                <span class="metric-label">Disco</span>
+                <strong id="disk-value">--%</strong>
+                <small id="disk-detail">--</small>
+                <div class="bar"><span id="disk-bar"></span></div>
+            </article>
+            <article class="metric glass">
+                <span class="metric-label">Uptime</span>
+                <strong id="uptime-value">--</strong>
+                <small id="container-detail">Contêineres: --</small>
+            </article>
+        </section>
+
+        <section class="services-section glass">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">MONITORAMENTO</p>
+                    <h2>Serviços</h2>
+                </div>
+                <span id="last-update">Atualizando...</span>
+            </div>
+            <div id="services-grid" class="services-grid"></div>
+        </section>
+
+        <footer>
+            © 2026 Painel de Serviços • 3º SGT RIBEIRO
+        </footer>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
