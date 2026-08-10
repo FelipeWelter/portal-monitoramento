@@ -12,11 +12,10 @@ services:
       CHECK_TIMEOUT: "4"
       PING_TIMEOUT: "2"
       HOST_ROOT: "/host"
-      FO_URL: "http://10.133.14.179/fo/"
-      OTOBO_CLIENTE_URL: "http://10.133.14.179/otobo/customer.pl"
-      OTOBO_ADMIN_URL: "http://10.133.14.179/admin"
-      COCKPIT_URL: "https://10.133.14.179:9090"
-      KUMA_URL: "http://10.133.14.179:3001"
+      FO_URL: "http://10.133.212.222"
+      OTOBO_CLIENTE_URL: "http://10.133.212.56/otobo/customer.pl"
+      OTOBO_ADMIN_URL: "http://10.133.212.56"
+      COCKPIT_URL: "https://10.133.212.103:9090"
     volumes:
       - /:/host:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
