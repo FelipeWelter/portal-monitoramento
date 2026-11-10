@@ -23,11 +23,11 @@ PING_TIMEOUT = int(os.getenv("PING_TIMEOUT", "2"))
 
 SERVICES = [
     {
-        "id": "fo",
-        "name": "Sistema FO",
-        "description": "Sistema de Fatos Observados",
-        "type": "http",
-        "url": os.getenv("FO_URL", "http://10.133.212.222"),
+        "id": "nx",
+        "name": "NEXT CLOUD",
+        "description": "Sistema de Armazenamento em Núvem",
+        "type": "https",
+        "url": os.getenv("NXT_URL", "Seguir o link (ctrl + clique)"),
         "container": "",
     },
     {
@@ -39,58 +39,30 @@ SERVICES = [
         "container": "",
     },
     {
-        "id": "otobo_admin",
-        "name": "OTOBO Admin",
-        "description": "Administração do OTOBO",
-        "type": "http",
-        "url": os.getenv("OTOBO_ADMIN_URL", "http://10.133.212.56/otobo/index.pl"),
+        "id": "vs",
+        "name": "Visual Studio",
+        "description": "Ambiente de Desenvolvimento Web",
+        "type": "https",
+        "url": os.getenv("vs_URL", "https://vs.codewelter.cloud"),
         "container": "",
     },
     {
-        "id": "cockpit",
-        "name": "Cockpit",
-        "description": "Administração do servidor 103",
+        "id": "fire",
+        "name": "NGINX",
+        "description": "Sistema de Gerenciamento PROXY",
         "type": "http",
-        "url": os.getenv("COCKPIT_URL", "https://10.133.212.103:9090"),
+        "url": os.getenv("PRX_URL", "http://82.25.70.30:81"),
         "container": "",
-        "verify_tls": False,
     },
 
     {
-	"id": "foadm",
-	"name": "Painel Adm F.O",
-	"description": "Painel Administrador servidor 222",
-	"type": "ping",
+	"id": "tool",
+	"name": "Site WSystemX",
+	"description": "Site de Download do Sistema X",
+	"type": "https",
 	"host": "10.133.212.222",
-	"url": os.getenv("ADMFO_URL", "http://10.133.212.222:9090"),
+	"url": os.getenv("tool_URL", "https://tool.codewelter.cloud"),
 	"container": "",
-    },
-    {
-        "id": "servidor_arquivos",
-        "name": "Servidor de Arquivos",
-        "description": "10.133.212.11 • Monitoramento ICMP",
-        "type": "ping",
-        "host": "10.133.212.11",
-        "url": "",
-        "container": "",
-    },
-    {
-        "id": "c2_interno",
-        "name": "C2 em Combate Interno",
-        "description": "10.133.212.13 • Monitoramento ICMP",
-        "type": "ping",
-        "host": "10.133.212.13",
-        "url": os.getenv("C2INTER_URL", "https://10.133.212.13:8000"),
-        "container": "",
-    },
-    {
-        "id": "c2_7cta",
-        "name": "C2 Combate 7º CTA",
-        "description": "10.166.66.168 • Monitoramento ICMP",
-        "type": "ping",
-        "host": "10.166.66.168",
-        "url": os.getenv("C27CTA_URL", "https://10.166.66.168:8000"),
-        "container": "",
     },
 ]
 
@@ -265,7 +237,7 @@ def index():
     return render_template(
         "index.html",
         title=os.getenv("PORTAL_TITLE", "PAINEL DE SERVIÇOS"),
-        subtitle=os.getenv("PORTAL_SUBTITLE", "6ª Companhia de Comunicações Mecanizada"),
+        subtitle=os.getenv("PORTAL_SUBTITLE", "Code Welter Monitor"),
         refresh_seconds=int(os.getenv("REFRESH_SECONDS", "15")),
     )
 

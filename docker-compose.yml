@@ -7,18 +7,15 @@ services:
       - "80:8080"
     environment:
       PORTAL_TITLE: "PAINEL DE SERVIÇOS"
-      PORTAL_SUBTITLE: "6ª Companhia de Comunicações Mecanizada"
+      PORTAL_SUBTITLE: "CODE WELTER"
       REFRESH_SECONDS: "15"
       CHECK_TIMEOUT: "4"
       PING_TIMEOUT: "2"
       HOST_ROOT: "/host"
-      FO_URL: "http://10.133.212.222"
-      OTOBO_CLIENTE_URL: "http://10.133.212.56/otobo/customer.pl"
-      OTOBO_ADMIN_URL: "http://10.133.212.56/otobo/index.pl"
-      COCKPIT_URL: "https://10.133.212.103:9090"
-      ADMFO_URL: "http://10.133.212.222:9090"
-      C27INTER_URL: "https://10.133.212.13:8000"
-      C27CTA_URL: "https://10.166.66.168:8000"
+      NXT_URL: "https://codewelter.cloud"
+      vs_URL: "https://vs.codewelter.cloud"
+      PRX_URL: "http://82.25.70.30:81"
+      tool_URL: "https://tool.codewelter.cloud"
     volumes:
       - /:/host:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
