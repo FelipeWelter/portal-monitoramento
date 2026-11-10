@@ -55,6 +55,16 @@ SERVICES = [
         "container": "",
         "verify_tls": False,
     },
+
+    {
+	"id": "foadm",
+	"name": "Painel Adm F.O",
+	"description": "Painel Administrador servidor 222",
+	"type": "ping",
+	"host": "10.133.212.222",
+	"url": os.getenv("ADMFO_URL", "http://10.133.212.222:9090"),
+	"container": "",
+    },
     {
         "id": "servidor_arquivos",
         "name": "Servidor de Arquivos",

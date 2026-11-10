@@ -16,6 +16,7 @@ services:
       OTOBO_CLIENTE_URL: "http://10.133.212.56/otobo/customer.pl"
       OTOBO_ADMIN_URL: "http://10.133.212.56/otobo/index.pl"
       COCKPIT_URL: "https://10.133.212.103:9090"
+      ADMFO_URL: "http://10.133.212.222:9090"
       C27INTER_URL: "https://10.133.212.13:8000"
       C27CTA_URL: "https://10.166.66.168:8000"
     volumes:
