@@ -4,7 +4,7 @@ services:
     container_name: portal-monitoramento
     restart: unless-stopped
     ports:
-      - "80:8080"
+      - "80:7551"
     environment:
       PORTAL_TITLE: "PAINEL DE SERVIÇOS"
       PORTAL_SUBTITLE: "CODE WELTER"
