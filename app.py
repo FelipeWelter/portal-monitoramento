@@ -31,14 +31,6 @@ SERVICES = [
         "container": "",
     },
     {
-        "id": "otobo_cliente",
-        "name": "OTOBO Cliente",
-        "description": "Portal de abertura de chamados",
-        "type": "http",
-        "url": os.getenv("OTOBO_CLIENTE_URL", "http://10.133.212.56/otobo/customer.pl"),
-        "container": "",
-    },
-    {
         "id": "vs",
         "name": "Visual Studio",
         "description": "Ambiente de Desenvolvimento Web",
